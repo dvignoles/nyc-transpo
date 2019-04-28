@@ -102,3 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# ITDS project files
+bike_data
+taxi_data
