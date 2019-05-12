@@ -43,15 +43,20 @@ def get_date_format(year):
 def get_parsed_df(year, store):
   print("Loading bike data for year " + year)
   store_key = 'y' + year
+  file_path_cleaned = get_csv_path('bike', year, True)
+  file_path_uncleaned = get_csv_path('bike', year)
   try:
-    df_temp = store[store_key]
-    return df_temp
+    stored = store[store_key]
+    added_new_features = add_all_features(stored, year)
+    if added_new_features:
+      store[store_key] = stored
+      stored.to_csv(file_path_cleaned, index=False)
+    return stored
   except KeyError:
     pass
 
   na_values = '\\N'
-  file_path_cleaned = get_csv_path('bike', year, True)
-  file_path_uncleaned = get_csv_path('bike', year)
+
   cleaned = os.path.isfile(file_path_cleaned)
   
   if cleaned:
@@ -76,13 +81,15 @@ def get_parsed_df(year, store):
   df_temp['starttime'] = pd.to_datetime(df_temp['starttime'], format=get_date_format(year) if not cleaned else '')
   df_temp['stoptime'] = pd.to_datetime(df_temp['stoptime'], format=get_date_format(year) if not cleaned else '')
   
+  added_new_features = add_all_features(df_temp, year)
+
   if not cleaned:
     clean_column_names(df_temp)
     # Limit the dataset to 1 week of June 
     df_temp = df_temp.loc[(df_temp['starttime'] > year + '-06-01') & (df_temp['starttime'] < year + '-06-08')]
-    # Add the features
-    add_all_features(df_temp)
     # Save the cleaned file
+    df_temp.to_csv(file_path_cleaned, index=False)
+  elif added_new_features:
     df_temp.to_csv(file_path_cleaned, index=False)
   
   store[store_key] = df_temp

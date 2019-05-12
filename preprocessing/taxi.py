@@ -40,9 +40,15 @@ dtypes = {
 def get_parsed_df(year, store):
   print("Loading taxi data for year " + year)
   store_key = 'y' + year
+  file_path_cleaned = get_csv_path('taxi', year, True)
+  file_path_uncleaned = get_csv_path('taxi', year)
   try:
     # See if the store has our data
     stored = store.get(store_key)
+    added_new_features = add_all_features(stored, year)
+    if added_new_features:
+      store[store_key] = stored
+      stored.to_csv(file_path_cleaned, index=False)
     return stored
   except KeyError:
     # If not, continue the function below
@@ -50,8 +56,7 @@ def get_parsed_df(year, store):
   
   # Cleaned is the one-week data with cleaned column names
   # Uncleaned is the full dataset
-  file_path_cleaned = get_csv_path('taxi', year, True)
-  file_path_uncleaned = get_csv_path('taxi', year)
+
   cleaned = os.path.isfile(file_path_cleaned)
   if cleaned:
     df_temp = pd.read_csv(file_path_cleaned, dtype=dtypes, na_values='')
@@ -70,14 +75,16 @@ def get_parsed_df(year, store):
   df_temp['pickup_datetime'] = pd.to_datetime(df_temp.iloc[:,1])
   df_temp['dropoff_datetime'] = pd.to_datetime(df_temp.iloc[:,2])
   
+  added_new_features = add_all_features(df_temp, year)
+
   if not cleaned:
     clean_column_names(df_temp)
     # Get only the first week of the month
     df_temp = df_temp.loc[(df_temp['pickup_datetime'] > (year + '-06-01')) & (df_temp['pickup_datetime'] < (year + '-06-08'))]
-    # Add the features
-    add_all_features(df_temp)
     # Save the cleaned file
     df_temp.to_csv(file_path_cleaned, index=False)
+  elif added_new_features:
+    df_temp.to_csv(file_path_cleaned, index=False)
 
-  store['y' + year] = df_temp
+  store[store_key] = df_temp
   return df_temp
