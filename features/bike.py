@@ -20,6 +20,7 @@ def day(df, year):
         return False
     print("Adding taxi feature: " + key)
     df[key] = df.loc[:,'starttime'].map(lambda date: int(date.strftime('%d')))
+    return True
 
 def zone_from(df, year):
     key = 'zone_from'
