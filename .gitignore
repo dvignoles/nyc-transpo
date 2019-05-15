@@ -106,3 +106,4 @@ venv.bak/
 # ITDS project files
 bike_data
 taxi_data
+.vscode/settings.json
