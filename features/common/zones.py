@@ -82,3 +82,9 @@ def from_to(from_lon,from_lat,to_lon,to_lat):
         return z_from.name + ' to ' + z_to.name
     except:
         return np.nan
+
+def from_to_zid(from_id, to_id):
+    try:
+      return zones.ZONES_DIC[str(float(from_id))].name + ' to ' + zones.ZONES_DIC[str(float(to_id))].name
+    except Exception as ex:
+      return np.nan
